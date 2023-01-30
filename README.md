@@ -40,3 +40,15 @@
 # Notes
 
 You can see what the associated backend URIs are by using the `/status` endpoint on the API.
+
+```console
+$ curl http://localhost:5000/status
+{
+  "backend": {
+    "MONGO_URI": "mongodb://root:********@10.0.0.117:27017",
+    "REDIS_URI": "redis://10.0.0.117:6379"
+  },
+  "version": "1.0.0",
+  "uptime": "14 minutes"
+}
+```
