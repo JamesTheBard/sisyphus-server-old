@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_restx import Api, Resource
 from datetime import datetime
-import config
+from app.config import config
 import redis as r
 import pymongo
 
