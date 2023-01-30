@@ -6,23 +6,11 @@ from flask import make_response, request
 from flask_restx import Resource
 
 from app import api, redis, mongo
-from app.models.workers import workers_status_model
+from app.models.workers import workers_status_model, workers_progress_model
 from app.parsers.workers import worker_data
 from app.config import Config
 
 ns = api.namespace('worker', description="Worker operations")
-
-
-@ns.route('/status')
-class WorkersMain(Resource):
-    def get(self):
-        data = Box()
-        for key in redis.keys("worker:*"):
-            name = key.decode().split(':')[1]
-            data[name] = json.loads(redis.get(key))
-            if data[name].status == "in_progress":
-                data[name].progress = json.loads(redis.get(f"progress:{name}"))
-        return data, 200
 
 
 @ns.route('/data')
@@ -54,13 +42,24 @@ class WorkersData(Resource):
         return None, 204
 
 
+@ns.route('/status')
+class WorkersMain(Resource):
+    def get(self):
+        data = Box()
+        for key in redis.keys("worker:*"):
+            name = key.decode().split(':')[1]
+            data[name] = json.loads(redis.get(key))
+            if data[name].status == "in_progress":
+                data[name].progress = json.loads(redis.get(f"progress:{name}"))
+        return data, 200
+
+
 @ns.route('/status/<string:worker_id>')
 class WorkersStatus(Resource):
     @ns.response(200, 'Success')
     @ns.response(404, 'Not Found')
     def get(self, worker_id):
         data = redis.get(f"worker:{worker_id}")
-        print(data)
         if not data:
             return {"error": "worker not found"}, 404
         return json.loads(data), 200
@@ -70,4 +69,32 @@ class WorkersStatus(Resource):
     def post(self, worker_id):
         req = request.get_json()
         redis.set(f"worker:{worker_id}", json.dumps(req), ex=Config.STATUS_EXPIRY)
+        return None, 204
+
+
+@ns.route('/progress')
+class WorkersMain(Resource):
+    def get(self):
+        data = Box()
+        for key in redis.keys("progress:*"):
+            name = key.decode().split(':')[1]
+            data[name] = json.loads(redis.get(key))
+        return data, 200
+
+
+@ns.route('/progress/<string:worker_id>')
+class WorkerProgress(Resource):
+    @ns.response(200, 'Success')
+    @ns.response(404, 'Not Found')
+    def get(self, worker_id):
+        data = redis.get(f"progress:{worker_id}")
+        if not data:
+            return {"error": "worker not found"}, 404
+        return json.loads(data), 200
+
+    @ns.doc(body=workers_progress_model)
+    @ns.response(204, 'No Content')
+    def post(self, worker_id):
+        req = request.get_json()
+        redis.set(f"progress:{worker_id}", json.dumps(req), ex=Config.STATUS_EXPIRY)
         return None, 204
