@@ -43,6 +43,9 @@ You can see what the associated backend URIs are by using the `/status` endpoint
 
 ```console
 $ curl http://localhost:5000/status
+```
+
+```json
 {
   "backend": {
     "MONGO_URI": "mongodb://root:********@10.0.0.117:27017",
