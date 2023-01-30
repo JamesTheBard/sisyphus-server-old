@@ -55,3 +55,19 @@ $ curl http://localhost:5000/status
   "uptime": "14 minutes"
 }
 ```
+
+# Docker Compose
+
+You can also spin up the application using the `docker-compose.yaml` file in the `docker` directory.  This will build the
+application and spin up the associated services needed to run the application.  If you make changes to the server or want
+to test out new and exciting things, you can pass the `--build` option to rebuild the server container.
+
+```console
+$ cd docker
+$ docker-compose up --build
+```
+
+```powershell
+PS> cd docker
+PS> docker-compose-v1.exe up --build
+```
