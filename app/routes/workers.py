@@ -7,12 +7,13 @@ from flask_restx import Resource
 
 from app import api, redis, mongo
 from app.models.workers import workers_status_model
-from app.parsers.workers import worker_data, worker_status
+from app.parsers.workers import worker_data
+from app.config import Config
 
 ns = api.namespace('worker', description="Worker operations")
 
 
-@ns.route('/')
+@ns.route('/status')
 class WorkersMain(Resource):
     def get(self):
         data = Box()
@@ -53,14 +54,12 @@ class WorkersData(Resource):
         return None, 204
 
 
-@ns.route('/status')
-@ns.expect(worker_status)
+@ns.route('/status/<string:worker_id>')
 class WorkersStatus(Resource):
     @ns.response(200, 'Success')
     @ns.response(404, 'Not Found')
-    def get(self):
-        args = worker_status.parse_args()
-        data = redis.get(f"worker:{args['id']}")
+    def get(self, worker_id):
+        data = redis.get(f"worker:{worker_id}")
         print(data)
         if not data:
             return {"error": "worker not found"}, 404
@@ -68,8 +67,7 @@ class WorkersStatus(Resource):
 
     @ns.doc(body=workers_status_model)
     @ns.response(204, 'No Content')
-    def post(self):
-        args = worker_status.parse_args()
+    def post(self, worker_id):
         req = request.get_json()
-        redis.set(f"worker:{args['id']}", json.dumps(req))
+        redis.set(f"worker:{worker_id}", json.dumps(req), ex=Config.STATUS_EXPIRY)
         return None, 204

@@ -8,7 +8,8 @@ from box import Box
 from flask import request
 from flask_restx import Resource
 
-from app.config import config, version
+from app.version import VERSION
+from app.config import Config
 from app import api, redis, start_time
 from app.models.status import status_model
 
@@ -29,9 +30,9 @@ class ServerConfiguration(Resource):
     def get(self):
         data = Box()
         data.backend = {
-            "MONGO_URI": sanitize_uri(config.MONGO_URI),
-            "REDIS_URI": sanitize_uri(config.REDIS_URI)
+            "MONGO_URI": sanitize_uri(Config.MONGO_URI),
+            "REDIS_URI": sanitize_uri(Config.REDIS_URI)
         }
-        data.version = version.VERSION
+        data.version = VERSION
         data.uptime = humanize.naturaldelta(datetime.now() - start_time)
         return data, 200
