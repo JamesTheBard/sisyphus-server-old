@@ -1,15 +1,16 @@
 from flask import Flask
 from flask_restx import Api, Resource
+from datetime import datetime
+import config
 import redis as r
 import pymongo
 
 app = Flask(__name__)
 api = Api(app, doc="/doc/")
 
-redis = r.Redis(
-    host='10.0.0.117',
-)
+redis = r.from_url(config.REDIS_URI)
+mongo = pymongo.MongoClient(config.MONGO_URI)
 
-mongo = pymongo.MongoClient('mongodb://root:root@10.0.0.117:27017')
+start_time = datetime.now()
 
-from app.routes import queue, workers
+from app.routes import queue, workers, config

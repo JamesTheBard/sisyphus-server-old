@@ -7,7 +7,7 @@ from flask import request
 from flask_restx import Resource
 
 from app import api, redis
-from app.models.job import queue_job_post
+from app.models.job import queue_job_post, queue_list_model
 
 ns = api.namespace('queue', description="Queue operations")
 
@@ -15,6 +15,7 @@ ns = api.namespace('queue', description="Queue operations")
 @ns.route('/')
 class QueueMain(Resource):
     @ns.doc(description="Gets all jobs on the current queue.")
+    @ns.response(200, 'Success', queue_list_model)
     def get(self):
         queue = [json.loads(i) for i in reversed(redis.lrange("queue", 0, -1))]
         return {'queue': queue, 'entries': len(queue)}, 200
@@ -32,7 +33,8 @@ class QueueMain(Resource):
 
 @ns.route('/all')
 class QueueReset(Resource):
-    @ns.doc(responses={204: 'No Content'}, description="Deletes all jobs from the queue.")
+    @ns.doc(description="Deletes all jobs from the queue.")
+    @ns.response(204, 'No Content')
     def delete(self):
         redis.delete("queue")
         return '', 204

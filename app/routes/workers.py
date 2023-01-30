@@ -17,16 +17,18 @@ class WorkersMain(Resource):
     def get(self):
         data = Box()
         for key in redis.keys("worker:*"):
-            name = key.split(':')[1]
+            name = key.decode().split(':')[1]
             data[name] = json.loads(redis.get(key))
             if data[name].status == "in_progress":
                 data[name].progress = json.loads(redis.get(f"progress:{name}"))
-        return data
+        return data, 200
 
 
 @ns.route('/data')
 @ns.expect(worker_data)
 class WorkersData(Resource):
+    @ns.response(200, 'Success')
+    @ns.response(404, 'Not Found')
     def get(self):
         args = worker_data.parse_args()
         coll = mongo[args["module"]][args["dataset"]]
@@ -43,6 +45,7 @@ class WorkersData(Resource):
         coll.replace_one({"name": args['name']}, data, upsert=True)
         return data, 200
 
+    @ns.response(204, 'No Content')
     def delete(self):
         args = worker_data.parse_args()
         coll = mongo[args["module"]][args["dataset"]]
@@ -53,6 +56,8 @@ class WorkersData(Resource):
 @ns.route('/status')
 @ns.expect(worker_status)
 class WorkersStatus(Resource):
+    @ns.response(200, 'Success')
+    @ns.response(404, 'Not Found')
     def get(self):
         args = worker_status.parse_args()
         data = redis.get(f"worker:{args['id']}")
@@ -62,6 +67,7 @@ class WorkersStatus(Resource):
         return json.loads(data), 200
 
     @ns.doc(body=workers_status_model)
+    @ns.response(204, 'No Content')
     def post(self):
         args = worker_status.parse_args()
         req = request.get_json()
