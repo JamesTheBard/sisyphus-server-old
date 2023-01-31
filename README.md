@@ -64,10 +64,10 @@ to test out new and exciting things, you can pass the `--build` option to rebuil
 
 ```console
 $ cd docker
-$ docker-compose up --build
+$ docker compose up --build
 ```
 
 ```powershell
 PS> cd docker
-PS> docker-compose-v1.exe up --build
+PS> docker compose up --build
 ```

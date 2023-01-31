@@ -1,14 +1,11 @@
-import json
 import re
-import uuid
 from datetime import datetime
 
 import humanize
 from box import Box
-from flask import request
 from flask_restx import Resource
 
-from app import api, redis, start_time
+from app import api, start_time
 from app.config import Config
 from app.models.status import status_model
 from app.version import VERSION
@@ -27,6 +24,7 @@ def sanitize_uri(uri):
 @ns.route('')
 class ServerConfiguration(Resource):
     @ns.marshal_with(status_model)
+    @ns.doc()
     def get(self):
         data = Box()
         data.backend = {
