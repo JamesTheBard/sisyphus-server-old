@@ -24,7 +24,7 @@ def sanitize_uri(uri):
 @ns.route('')
 class ServerConfiguration(Resource):
     @ns.marshal_with(status_model)
-    @ns.doc()
+    @ns.doc(description="Get the current server status and configuration")
     def get(self):
         data = Box()
         data.backend = {

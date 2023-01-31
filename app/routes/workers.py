@@ -7,7 +7,7 @@ from flask_restx import Resource
 
 from app import api, mongo, redis
 from app.config import Config
-from app.models.workers import workers_progress_model, workers_status_model
+from app.models.workers import workers_progress_model, workers_status_model, workers_data_model
 from app.parsers.workers import worker_data
 
 ns = api.namespace('worker', description="Worker operations")
@@ -16,6 +16,7 @@ ns = api.namespace('worker', description="Worker operations")
 @ns.route('/data')
 @ns.expect(worker_data)
 class WorkersData(Resource):
+    @ns.doc(description="Get module-specific data from the datastore")
     @ns.response(200, 'Success')
     @ns.response(404, 'Not Found')
     def get(self):
@@ -27,6 +28,8 @@ class WorkersData(Resource):
             return None, 404
         return make_response(json_util.dumps(record), 200)
 
+    @ns.doc(description="Push module-specific data to the datastore")
+    @ns.expect(workers_data_model)
     def post(self):
         args = worker_data.parse_args()
         module = Config.DATA_PREFIX + args["module"]
@@ -36,6 +39,7 @@ class WorkersData(Resource):
         coll.replace_one({"name": args['name']}, data, upsert=True)
         return data, 200
 
+    @ns.doc(description="Delete module-specific data in the datastore")
     @ns.response(204, 'No Content')
     def delete(self):
         args = worker_data.parse_args()
@@ -47,6 +51,7 @@ class WorkersData(Resource):
 
 @ns.route('/status')
 class WorkersMain(Resource):
+    @ns.doc(description="Get the status of all encoder clients")
     def get(self):
         data = Box()
         for key in redis.keys("worker:*"):
@@ -59,6 +64,7 @@ class WorkersMain(Resource):
 
 @ns.route('/status/<string:worker_id>')
 class WorkersStatus(Resource):
+    @ns.doc(description="Get the status of a specific worker by ID")
     @ns.response(200, 'Success')
     @ns.response(404, 'Not Found')
     def get(self, worker_id):
@@ -67,7 +73,7 @@ class WorkersStatus(Resource):
             return {"error": "worker not found"}, 404
         return json.loads(data), 200
 
-    @ns.doc(body=workers_status_model)
+    @ns.doc(body=workers_status_model, description="Push the status of a specific worker by ID")
     @ns.response(204, 'No Content')
     def post(self, worker_id):
         req = request.get_json()
@@ -77,6 +83,7 @@ class WorkersStatus(Resource):
 
 @ns.route('/progress')
 class WorkersMain(Resource):
+    @ns.doc(description="Get the progress of all workers")
     def get(self):
         data = Box()
         for key in redis.keys("progress:*"):
@@ -87,6 +94,7 @@ class WorkersMain(Resource):
 
 @ns.route('/progress/<string:worker_id>')
 class WorkerProgress(Resource):
+    @ns.doc(description="Get the progress of a worker by ID")
     @ns.response(200, 'Success')
     @ns.response(404, 'Not Found')
     def get(self, worker_id):
@@ -95,7 +103,7 @@ class WorkerProgress(Resource):
             return {"error": "worker not found"}, 404
         return json.loads(data), 200
 
-    @ns.doc(body=workers_progress_model)
+    @ns.doc(body=workers_progress_model, description="Push the current progress of a worker via ID")
     @ns.response(204, 'No Content')
     def post(self, worker_id):
         req = request.get_json()
