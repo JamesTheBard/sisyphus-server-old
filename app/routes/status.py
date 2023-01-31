@@ -24,7 +24,7 @@ def sanitize_uri(uri):
     return uri
 
 
-@ns.route('/')
+@ns.route('')
 class ServerConfiguration(Resource):
     @ns.marshal_with(status_model)
     def get(self):

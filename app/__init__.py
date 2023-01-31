@@ -13,4 +13,4 @@ mongo = pymongo.MongoClient(Config.MONGO_URI)
 
 start_time = datetime.now()
 
-from app.routes import queue, workers, config
+from app.routes import queue, workers, status

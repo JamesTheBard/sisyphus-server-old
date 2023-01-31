@@ -8,3 +8,7 @@ class Config:
 
     # Worker status expiration for Redis
     STATUS_EXPIRY = 10
+
+    # Module data store prefix
+    DATA_PREFIX = "data_"
+    

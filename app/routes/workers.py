@@ -20,7 +20,8 @@ class WorkersData(Resource):
     @ns.response(404, 'Not Found')
     def get(self):
         args = worker_data.parse_args()
-        coll = mongo[args["module"]][args["dataset"]]
+        module = Config.DATA_PREFIX + args["module"]
+        coll = mongo[module][args["dataset"]]
         record = coll.find_one({"name": args["name"]})
         if not record:
             return None, 404
@@ -28,7 +29,8 @@ class WorkersData(Resource):
 
     def post(self):
         args = worker_data.parse_args()
-        coll = mongo[args["module"]][args["dataset"]]
+        module = Config.DATA_PREFIX + args["module"]
+        coll = mongo[module][args["dataset"]]
         data = request.get_json()
         data['name'] = args['name']
         coll.replace_one({"name": args['name']}, data, upsert=True)
@@ -37,7 +39,8 @@ class WorkersData(Resource):
     @ns.response(204, 'No Content')
     def delete(self):
         args = worker_data.parse_args()
-        coll = mongo[args["module"]][args["dataset"]]
+        module = Config.DATA_PREFIX + args["module"]
+        coll = mongo[module][args["dataset"]]
         coll.delete_one({"name": args['name']})
         return None, 204
 
