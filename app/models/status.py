@@ -1,6 +1,6 @@
-from app import api
 from flask_restx import fields
 
+from app import api
 
 backend_model = api.model('BackendModel', {
     'MONGO_URI': fields.String(description='The URI of the MongoDB'),

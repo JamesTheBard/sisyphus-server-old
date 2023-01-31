@@ -5,10 +5,10 @@ from bson import json_util
 from flask import make_response, request
 from flask_restx import Resource
 
-from app import api, redis, mongo
-from app.models.workers import workers_status_model, workers_progress_model
-from app.parsers.workers import worker_data
+from app import api, mongo, redis
 from app.config import Config
+from app.models.workers import workers_progress_model, workers_status_model
+from app.parsers.workers import worker_data
 
 ns = api.namespace('worker', description="Worker operations")
 

@@ -1,5 +1,6 @@
 import os
 
+
 class Config:
     # Redis and MongoDB URIs
     REDIS_URI = os.environ.get('REDIS_URI', 'redis://localhost')

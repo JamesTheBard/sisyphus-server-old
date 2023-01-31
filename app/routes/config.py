@@ -8,10 +8,10 @@ from box import Box
 from flask import request
 from flask_restx import Resource
 
-from app.version import VERSION
-from app.config import Config
 from app import api, redis, start_time
+from app.config import Config
 from app.models.status import status_model
+from app.version import VERSION
 
 ns = api.namespace('status', description="Server configuration")
 

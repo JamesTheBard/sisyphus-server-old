@@ -1,5 +1,6 @@
-from app import api
 from flask_restx import fields
+
+from app import api
 
 queue_job_post = api.model('QueueJobPost', {
     'job_title': fields.String(description='The title of the job', required=True),

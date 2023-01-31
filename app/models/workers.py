@@ -1,6 +1,6 @@
-from app import api
 from flask_restx import fields
 
+from app import api
 
 workers_status_model = api.model('WorkerStatusPost', {
     'status': fields.String(description='The current status of the worker.', required=True),
