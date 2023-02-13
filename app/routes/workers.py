@@ -7,7 +7,8 @@ from flask_restx import Resource
 
 from app import api, mongo, redis
 from app.config import Config
-from app.models.workers import workers_progress_model, workers_status_model, workers_data_model
+from app.models.workers import (workers_data_model, workers_progress_model,
+                                workers_status_model)
 from app.parsers.workers import worker_data
 
 ns = api.namespace('worker', description="Worker operations")
@@ -77,7 +78,8 @@ class WorkersStatus(Resource):
     @ns.response(204, 'No Content')
     def post(self, worker_id):
         req = request.get_json()
-        redis.set(f"worker:{worker_id}", json.dumps(req), ex=Config.STATUS_EXPIRY)
+        redis.set(f"worker:{worker_id}", json.dumps(
+            req), ex=Config.STATUS_EXPIRY)
         return None, 204
 
 
@@ -107,5 +109,45 @@ class WorkerProgress(Resource):
     @ns.response(204, 'No Content')
     def post(self, worker_id):
         req = request.get_json()
-        redis.set(f"progress:{worker_id}", json.dumps(req), ex=Config.STATUS_EXPIRY)
+        redis.set(f"progress:{worker_id}", json.dumps(
+            req), ex=Config.STATUS_EXPIRY)
         return None, 204
+
+
+@ns.route('/disable/<string:worker_id>')
+@ns.response(200, 'Success')
+@ns.response(404, 'Not Found')
+class WorkerDisable(Resource):
+    @ns.doc(description="Get disable status of a worker by ID")
+    def get(self, worker_id):
+        if not redis.get(f'worker:{worker_id}'):
+            return {"message": "worker not found"}, 404
+        if not (r := redis.get(f'server:{worker_id}')):
+            return {"disabled": False}, 200
+        data = json.loads(r)
+        return {"disabled": data.get("disabled", False)}
+
+    @ns.doc(description="Disable a worker by ID")
+    def post(self, worker_id):
+        if not redis.get(f'worker:{worker_id}'):
+            return {"message": "worker not found"}, 404
+        if not (r := redis.get(f'server:{worker_id}')):
+            data = {"disabled": True}
+            redis.set(f'server:{worker_id}', json.dumps(data))
+            return data, 200
+        data = json.loads(r)
+        data['disabled'] = True
+        redis.set(f'server:{worker_id}', json.dumps(data))
+        return {"disabled": True}
+
+    @ns.doc(description="Clear disabled status on worker by ID")
+    def delete(self, worker_id):
+        if not redis.get(f'worker:{worker_id}'):
+            return {"message": "worker not found"}, 404
+        if not (r := redis.get(f'server:{worker_id}')):
+            return {"disabled": False}
+        data = r.loads(r)
+        if data.get('disabled'):
+            data['disabled'] = False
+            redis.set(f'server:{worker_id}', data)
+        return {"disabled": False}

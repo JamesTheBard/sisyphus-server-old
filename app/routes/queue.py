@@ -46,3 +46,35 @@ class QueuePoll(Resource):
         if job := redis.rpop("queue"):
             return json.loads(job), 200
         return {"message": "there are no jobs on the queue"}, 404
+
+
+@ns.route('/disable')
+@ns.response(200, 'Success')
+class DisableQueue(Resource):
+    @ns.doc(description="Get queue disabled status")
+    def get(self):
+        if not (r := redis.get("sisyphus")):
+            return {'queue_disabled': False}, 200
+        data = json.loads(r)
+        return {'queue_disabled': data.get('queue_disabled', False)}
+
+    @ns.doc(description="Disable all queue processing")
+    def post(self):
+        data = dict()
+        if r := redis.get("sisyphus"):
+            data = json.loads(r)
+        data['queue_disabled'] = True
+        redis.set("sisyphus", json.dumps(data))
+        return {"queue_disabled": True}
+
+    @ns.doc(description="Clear disabled status on queue")
+    def delete(self):
+        data = dict()
+        if not (r := redis.get("sisyphus")):
+            return {"queue_disabled": False}
+        data = json.loads(r)
+        if not data.get('queue_disabled', False):
+            return {"queue_disabled": False}
+        data['queue_disabled'] = False
+        redis.set('sisyphus', json.dumps(data))
+        return {"queue_disabled": False}
