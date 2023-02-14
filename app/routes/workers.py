@@ -83,37 +83,6 @@ class WorkersStatus(Resource):
         return None, 204
 
 
-@ns.route('/progress')
-class WorkersMain(Resource):
-    @ns.doc(description="Get the progress of all workers")
-    def get(self):
-        data = Box()
-        for key in redis.keys("progress:*"):
-            name = key.decode().split(':')[1]
-            data[name] = json.loads(redis.get(key))
-        return data, 200
-
-
-@ns.route('/progress/<string:worker_id>')
-class WorkerProgress(Resource):
-    @ns.doc(description="Get the progress of a worker by ID")
-    @ns.response(200, 'Success')
-    @ns.response(404, 'Not Found')
-    def get(self, worker_id):
-        data = redis.get(f"progress:{worker_id}")
-        if not data:
-            return {"error": "worker not found"}, 404
-        return json.loads(data), 200
-
-    @ns.doc(body=workers_progress_model, description="Push the current progress of a worker via ID")
-    @ns.response(204, 'No Content')
-    def post(self, worker_id):
-        req = request.get_json()
-        redis.set(f"progress:{worker_id}", json.dumps(
-            req), ex=Config.STATUS_EXPIRY)
-        return None, 204
-
-
 @ns.route('/disable/<string:worker_id>')
 @ns.response(200, 'Success')
 @ns.response(404, 'Not Found')

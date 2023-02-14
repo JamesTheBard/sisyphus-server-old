@@ -11,9 +11,4 @@ workers_status_model = api.model('WorkerStatusPost', {
     'job_id': fields.String(description='The ID of the job being run.'),
 })
 
-workers_progress_model = api.model('WorkerProgressPost', {
-    'current_frame': fields.Integer(description='The current frame being processed'),
-    'total_frames': fields.Integer(description='The total number of frames')
-})
-
 workers_data_model = api.model('WorkerDataPost', {})
